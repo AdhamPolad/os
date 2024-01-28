@@ -1,0 +1,716 @@
+// 76.	Write code in C that would generate 6 processes. Use fork() function exactly 3 times and output the PID of each process.
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <signal.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif 
+#include <sys/stat.h>
+#include <sys/mman.h>
+int main(int argc, char const *argv[])
+{
+    int process_id1 = fork();
+    if(process_id1 > 0){
+        printf("process1 id: %d\n", process_id1);
+        wait(NULL);
+    }
+    else{
+        printf("process2 id: %d\n", process_id1);
+        int process_id2 = fork();
+        if(process_id2 > 0){
+            printf("process3 id: %d\n", process_id2);
+            wait(NULL);
+    }
+        else{
+            printf("process4 id: %d\n", process_id2);
+            int process_id3 = fork();
+            if(process_id3 > 0){
+                printf("process5 id: %d\n", process_id3);
+                wait(NULL);
+    }
+            else{
+                printf("process6 id: %d\n", process_id3);
+            
+            }
+        }
+    }
+}
+
+// 77.	Write code in C using fork function that outputs "National Aviation Academy" in 2 processes. Only the first and last words should be printed by the main process.
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <signal.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif 
+#include <sys/stat.h>
+#include <sys/mman.h>
+int main(int argc, char const *argv[])
+{
+    int fork_id = fork();
+    if (fork_id > 0) {
+        printf("National ");
+        fflush(stdout);  // Flush the output to ensure immediate printing
+        wait(NULL);
+        printf("Academy\n");
+    } else {
+        printf("Aviation ");
+    }
+}
+
+// 78.	Write code in C that would generate random number inside the forked child process then output the number in main process. Use memory shared variable.
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <signal.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif 
+#include <sys/stat.h>
+#include <sys/mman.h>
+int main(int argc, char const *argv[])
+{
+    int *number = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    srand(time(NULL));
+    if(fork() > 0){
+        wait(NULL);
+        printf("Random number is: %d", *number);
+    }
+    else{
+        int random_number = rand();
+        *number = random_number;
+    }
+    return 0;
+}
+
+// 83.	Write code in C using fork function that outputs your "Firstname Patronymic Lastname" in 2 processes. Only Patronymic should be printed using the forked child process.
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <signal.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif 
+#include <sys/stat.h>
+#include <sys/mman.h>
+int main(int argc, char const *argv[])
+{
+    if(fork() > 0){
+        printf("Firstname ");
+        fflush(stdout);
+        wait(NULL);
+        printf("Lastname");
+    }
+    else{
+        printf("Patronymic ");
+    }
+}
+
+// 84.	Write code in C to calculate difference and sum of 2 integer strings of the same size in separate processes and combine them into one string. Use malloc/calloc to create variable for storing the result. Example: "236", "121" -> "115357".
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <signal.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif 
+#include <sys/stat.h>
+#include <sys/mman.h>
+int main(int argc, char const *argv[])
+{
+    int number1;
+    int number2;
+    printf("Enter number 1: ");
+    scanf("%d", &number1);
+    printf("Enter number 2: ");
+    scanf("%d", &number2);
+    int difference = number1 - number2;
+    int sum = number1 + number2;
+    char *strDifference = malloc(2 * sizeof(long));
+    char *strSum = calloc(2, sizeof(long));
+    char *result = malloc(4 * sizeof(long));
+    sprintf(strSum, "%d", sum);
+    sprintf(strDifference, "%d", difference);
+    strcat(result, strDifference);
+    strcat(result, strSum);
+    printf("Result: %s\n", result);
+    return 0;
+}
+
+// 87.	Write code in C to create 3 processes. Generate random number in each process and output the sum of all numbers in the main process. Use shared memory variable and no loops are allowed.
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <signal.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif 
+#include <sys/stat.h>
+#include <sys/mman.h>
+
+int main(int argc, char const *argv[])
+{
+    int *number = mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+        srand(time(NULL)  ^  getpid());
+        *number = 0;
+    if(fork() > 0){
+        int random1 = rand() % 10000;
+        *number += random1;
+        printf("\n1 is: %d\n", random1);
+        wait(NULL);
+        printf("Sum is: %d", *number);
+    }
+    else{
+        if(fork() > 0){
+            srand(time(NULL)  ^  getpid());
+            int random2 = rand() % 10000;
+            *number += random2;
+            printf("\n2 is: %d\n", random2);
+            wait(NULL);
+        }
+        else{
+            srand(time(NULL)  ^  getpid());
+            int random3 = rand() % 10000;
+            *number += random3;
+            printf("3 is: %d\n", random3);
+        }
+    }
+}
+
+// 88.	Write code in C to generate Fibonacci sequence of size N and output the last number in sequence. Use malloc/calloc to create variable for storing the sequence. Example: N=5 -> 1, 1, 2, 3, 5 -> 5.
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <signal.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif 
+#include <sys/stat.h>
+#include <sys/mman.h>
+
+int main(int argc, char const *argv[])
+{
+    int number;
+    printf("Enter the size of the Fibonacci sequence (N): ");
+    scanf("%d", &number);
+    if (number <= 0) {
+        printf("Invalid input. N should be a positive integer.\n");
+        return 1; // Return an error code
+    }
+    long long *fibonacci = malloc(number * sizeof(long long));
+    fibonacci[0] = 1;
+    fibonacci[1] = 1;
+    for (int i = 2; i < number; i++) {
+        fibonacci[i] = fibonacci[i - 1] + fibonacci[i - 2];
+    }
+    printf("Fibonacci sequence of size %d: ", number);
+    for (int i = 0; i < number; i++) {
+        printf("%llu", fibonacci[i]);
+        if (i < number - 1) {
+            printf(", ");
+        }
+    }
+    printf("\nLast number in the sequence: %llu\n", fibonacci[number - 1]);
+    free(fibonacci);
+    return 0;  
+}
+
+// 90.	Write code in C that would generate 8 processes using fork function and output the PID of each process. No loops are allowed.
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <signal.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif 
+#include <sys/stat.h>
+#include <sys/mman.h>
+int main(int argc, char const *argv[])
+{
+    int process_id1 = fork();
+    if(process_id1 > 0){
+        printf("Process1 id: %d\n", process_id1);
+        wait(NULL);
+        int process_id2 = fork();
+        if(process_id2 > 0){
+            printf("Process3 id: %d\n", process_id2); 
+            wait(NULL);
+            int process_id3 = fork();
+            if(process_id3 > 0){
+                printf("Process5 id: %d\n", process_id3); 
+                wait(NULL);
+            }   
+            else{
+                printf("Process6 id: %d\n", process_id3);  
+            }
+        }
+        else{
+            printf("Process4 id: %d\n", process_id2);
+            int process_id4 = fork();
+            if(process_id4 > 0){
+                printf("Process7 id: %d\n", process_id4); 
+                wait(NULL);
+            }   
+            else{
+                printf("Process8 id: %d\n", process_id4);  
+            }
+        }
+    }
+    else{
+        printf("Process2 id: %d\n", process_id1); 
+    }
+}
+
+// 92.	Write code in C using fork function that outputs "National Aviation Academy" in 3 processes. Each word must be printed in separate process and no loops are allowed. Use wait and fork functions.
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <signal.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif 
+#include <sys/stat.h>
+#include <sys/mman.h>
+int main(int argc, char const *argv[])
+{
+  if(fork() > 0){
+      printf("Academy");
+      wait(NULL);
+  }
+  else{
+      if(fork() > 0){
+        printf("Aviation ");
+        wait(NULL); 
+      }
+      else{
+        printf("National ");   
+      }
+  }
+}
+
+// 98.	Write code in C to create a process using fork. Calculate the sum of two random numbers in child process and print result in main process. Use shared variable.
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <signal.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif 
+#include <sys/stat.h>
+#include <sys/mman.h>
+int main(int argc, char const *argv[])
+{
+    int *number = mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+        srand(time(NULL)  ^  getpid());
+        *number = 0;
+    if(fork() > 0){
+        wait(NULL);
+        printf("Sum is: %d\n", *number);
+    }
+    else{
+        int number1 = rand() % 10000;
+        srand(time(NULL)  ^  getpid());
+        int number2 = rand() % 10000;
+        *number = number1 + number2;
+        printf("Num1: %d\n", number1);
+        printf("Num2: %d\n", number2);
+    }
+}
+
+// 99.	Write code in C to create a process using fork. Calculate the product of two random numbers in child process and print result in main process. Use shared variable.
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <signal.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif 
+#include <sys/stat.h>
+#include <sys/mman.h>
+int main(int argc, char const *argv[])
+{
+    int *number = mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+        srand(time(NULL)  ^  getpid());
+        *number = 0;
+    if(fork() > 0){
+        wait(NULL);
+        printf("Sum is: %d\n", *number);
+    }
+    else{
+        int number1 = rand() % 10000;
+        srand(time(NULL)  ^  getpid());
+        int number2 = rand() % 10000;
+        *number = number1 * number2;
+        printf("Num1: %d\n", number1);
+        printf("Num2: %d\n", number2);
+    }
+}
+
+
+
+
+
+//26 - Setup and demonstrate password less ssh login between two docker instances with password authentication disabled.
+
+1. For first instance 
+ docker run -it -h name --rm ubuntu
+2. For second instance
+ docker pull docker.io/kalilinux/kali-rolling
+ docker run -it -h surname --rm kalilinux/kali-rolling
+3. For both instances 
+ apt update
+ apt install nano
+ apt-get install openssh-server openssh-client -y
+ service ssh start
+4. In the First instance we adduser and set password
+ adduser root
+5. In the First instance
+ ssh-keygen -t rsa
+used for creating pair (private and public) of keys rsa for ssh protocol.
+ cat ~/.ssh/id_rsa.pub
+for output public key
+ we copy the key
+6. In the Second instance
+ mkdir ~/.ssh -p
+mkdir - for creating folder/catalogue/directory
+~ - define catalogue and /.ssh - name of directory where usually ssh keys are stored.
+~/.ssh - path of directory that we are creating
+then 
+ nano ~/.ssh/authorized_keys
+nano - redactor for editing directory authorized_keys
+here we will paste the copied key
+ hostname -i
+7. Finally in the First instance we type
+ ssh root@hostname
+
+//27 - 27. Demonstrate examples of crontab patterns: weekly, only odd days of month, every 7 minutes, once a year, every minute between some hours etc.
+
+1. docker run -it -h name --rm ubuntu
+2. apt update
+3. apt install nano
+4. apt install cron
+5. mkdir folder
+6. cd folder
+7. touch a.txt b.txt c.txt
+8. ls
+9. cd ..
+10. nano check.sh, then code from gpt or github
+
+Check if both folder path and maximum number of files are provided as arguments
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 /path/to/your/folder max_files"
+    exit 1
+fi
+
+Specify the folder path
+folder_path="$1"
+
+Change to the specified folder
+cd "$folder_path" || exit
+
+Check if the folder is empty
+if [ -z "$(ls -A)" ]; then
+    echo "Folder is empty. Nothing to remove."
+    exit
+fi
+
+Get the maximum number of files to keep
+max_files="$2"
+
+Get the total number of files in the folder
+num_files=$(find . -maxdepth 1 -type f | wc -l)
+
+If the number of files exceeds the limit, remove the excess files
+if [ "$num_files" -gt "$max_files" ]; then
+    excess_files=$((num_files - max_files))
+
+Remove all files except the latest one
+    ls -t | tail -n +2 | xargs rm -f
+
+    echo "$excess_files files removed to meet the limit of $max_files files."
+else
+    echo "Number of files is within the limit. Nothing to remove."
+fi
+11. chmod 777 check.sh
+12. crontab -e, inside we write 0 3 1-31/2 * * sh /check.sh /folder 1 >/dev/null 2>&1
+(./check.sh /folder 2 //(or 1 or any number))
+13. service cron start
+xx. Optional if we need to clear nano command - echo ' ' > filename.sh
+
+//28 - Setup 2 Linux hosts using docker and transfer files/folders between them using remote file transfer utilities.
+
+1. For first instance 
+docker run -it -h name --rm ubuntu
+2. For second instance
+docker run -it -h surname --rm ubuntu
+3. For both instances 
+ apt update
+ apt install nano
+ apt-get install openssh-server openssh-client -y
+ service ssh start
+4. Passworless connection
+ In task 26 (but for the second instance no need to set kali linux ubuntu is enough)
+5. exit from second instance in first one
+//For transferring files
+6. In first instance
+ mkdir folder1
+7. In Second instance
+ mkdir folder2
+ cd folder2
+ touch.txt
+8. In first instance
+ scp root@172.17.0.10:/folder2/a.txt folder1
+9. For checking in first instance
+ cd folder1
+ ls
+//For transfering files
+10. For both instance 
+ cd ..
+11. In First instance
+ scp -r folder1 root@172.17.0.10:/folder2
+12. In second instance
+ cd folder2
+ ls
+
+//29 - Setup SSH between Linux docker instances, then block SSH using firewall.
+
+1. In the First instance
+ docker run -it -h h1 --rm --privileged --name h1 -p 8080:80 ubuntu
+here we create container as a service
+2. In the Second instance
+  docker run -it -h h2 --rm --privileged --name h2 -p 8081:80 ubuntu
+3. For Both instances
+ apt update
+ apt install nginx -y
+ apt-get install openssh-server openssh-client -y
+ apt install nano
+ service nginx start
+ service ssh start
+4. Enter to the Browser, then in the first tab in url we will write localhost:8080 and in second tab localhost:8081
+5. For the first instance
+echo '<h1>Salam from h1</h1>' > /var/www/html/index.html
+6. For the second instance
+echo '<h1>Salam from h2</h1>' > /var/www/html/index.html
+7. Refresh the tabs for checking
+8. In the Second Instance
+ apt install iptables
+9. In the second instance 
+ nano /etc/ssh/sshd_config
+then we need found #PermitRootLogin porhibit-password change it to PermitRootLogin yes
+then we need found #PasswordAuthentification yes change it to PasswordAuthentification 
+10. In the second instance
+ passwd root (need set password)
+ hostname -i
+11. In the first instance
+ ssh root@hostname
+ (enter password)
+ if it is successfully entered exit
+if there problem with password entering we press enter, write command service ssh restart in the second instance and try again in the first instance.
+12. In the Second Instance
+ iptables -A INPUT -p tcp --dport 22 -j DROP
+13. In the First Instance
+ ssh root@hostname
+14. In The Second Instance
+ iptables -D INPUT -p tcp --dport 22 -j DROP
+tcp - this dont allow user to set tcp tunnel through ssh connection
+-p tcp - show tcp protocol
+-dport 22 - show ssh port
+15. In THE FIRST INSTANCE
+ ssh root@hostname
+
+//30 - Create simple web site using docker nginx container and access it from the different container using curl or wget. Use firewall to block/unblock access to the web site.
+
+1. In the First instance
+ docker run -it -h h1 --rm --privileged --name h1 -p 8080:80 ubuntu
+here we create container as a service
+2. In the Second instance
+  docker run -it -h h2 --rm --privileged --name h2 -p 8081:80 ubuntu
+3. For Both instances
+ apt update
+ apt install nginx -y
+ apt install curl
+ service nginx start
+4. Enter to the Browser, then in the first tab in url we will write localhost:8080 and in second tab localhost:8081
+5. For the first instance
+echo '<h1>Salam from h1</h1>' > /var/www/html/index.html
+6. For the second instance
+echo '<h1>Salam from h2</h1>' > /var/www/html/index.html
+7. Refresh the tabs for checking
+8. In the Second Instance
+ apt install iptables
+9. In The first we write
+ curl http://hostname
+10. In The Second instance
+iptables -A INPUT -p tcp --dport 80 -j DROP
+11. In The first we write
+ curl http://hostname
+12. In The Second instance
+iptables -D INPUT -p tcp --dport 80 -j DROP
+13. In The First
+curl http://hostname 
+
+//31 - Create simple web site using docker nginx container, block 80 port. Then access website from different container (using curl or wget) via SSH tunneling.
+
+1. In the First instance
+ docker run -it -h h1 --rm --privileged --name h1 -p 8080:80 ubuntu
+here we create container as a service
+2. In the Second instance
+  docker run -it -h h2 --rm --privileged --name h2 -p 8081:80 ubuntu
+3. For Both instances
+ apt update
+ apt install nginx -y
+ apt install curl
+ service nginx start
+4. Enter to the Browser, then in the first tab in url we will write localhost:8080 and in second tab localhost:8081
+5. For the first instance
+echo '<h1>Salam from h1</h1>' > /var/www/html/index.html
+6. For the second instance
+echo '<h1>Salam from h2</h1>' > /var/www/html/index.html
+7. Refresh the tabs for checking
+8. In the Second Instance
+ apt install iptables
+9. In The first we write
+ curl http://hostname
+10. In The Second instance
+ iptables -A INPUT -p tcp  -s hostnameof1stinstance --dport 80 -j ACCEPT
+ iptables -A INPUT -p tcp --dport 80 -j DROP
+11. In The first we write
+ curl http://hostname
+
+//33 - Demonstrate SSH port forwarding with L and R options.
+
+1. In the First instance
+ docker run -it -h h1 --rm --privileged --name h1 -p 8080:80 ubuntu
+here we create container as a service
+2. In the Second instance
+  docker run -it -h h2 --rm --privileged --name h2 -p 8081:80 ubuntu
+3. For Both instances
+ apt update
+ apt install nginx -y
+ apt-get install openssh-server openssh-client -y
+ apt install nano
+ apt install curl
+ service ssh start
+ service nginx start
+4. Enter to the Browser, then in the first tab in url we will write localhost:8080 and in second tab localhost:8081
+5. For the first instance
+echo '<h1>Salam from h1</h1>' > /var/www/html/index.html
+6. For the second instance
+echo '<h1>Salam from h2</h1>' > /var/www/html/index.html
+7. Refresh the tabs for checking
+8. In the Second Instance
+ apt install iptables
+9. In the second instance 
+ nano /etc/ssh/sshd_config
+then we need found #PermitRootLogin porhibit-password change it to PermitRootLogin yes
+then we need found #PasswordAuthentification yes change it to PasswordAuthentification 
+10. In the second instance
+ passwd root (need set password)
+ hostname -i
+11. In the first instance
+ ssh root@hostname
+ (enter password)
+ if it is successfully entered exit
+if there problem with password entering we press enter, write command service ssh restart in the second instance and try again in the first instance. 
+12. In the second instance 
+ iptables -A INPUT -p tcp -s 127.0.0.1 --dport 80 -j ACCEPT
+ iptables -A INPUT -p tcp --dport 80 -j DROP
+13. In The First instance
+ ssh -L 8888:localhost:80 root@172.17.0.3 and enter the password, then dont exit
+14. Open new cmd 
+15. In new third terminal
+ docker exec -it h1 bash
+ curl http://localhost:8888
+16. In the first instance we exit from second, then
+ ssh -R 8888:localhost:80 root@172.17.0.3
+17. In the thir terminal we exit from First insrtance, then
+ docker exec -it h2 bash
+ curl http://localhost:8888
+
+//36 - Create bash script to remove all files except the latest one in the folder if number of files is more than a given number. Schedule the script to run on daily basis.
+
+1. docker run -it -h name --rm ubuntu
+2. apt update
+3. apt install nano
+4. apt install cron
+5. mkdir folder
+6. cd folder
+7. touch a.txt b.txt c.txt
+8. ls
+9. cd ..
+10. nano check.sh, then code from gpt or github
+
+Check if both folder path and maximum number of files are provided as arguments
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 /path/to/your/folder max_files"
+    exit 1
+fi
+
+Specify the folder path
+folder_path="$1"
+
+Change to the specified folder
+cd "$folder_path" || exit
+
+Check if the folder is empty
+if [ -z "$(ls -A)" ]; then
+    echo "Folder is empty. Nothing to remove."
+    exit
+fi
+
+Get the maximum number of files to keep
+max_files="$2"
+
+Get the total number of files in the folder
+num_files=$(find . -maxdepth 1 -type f | wc -l)
+
+If the number of files exceeds the limit, remove the excess files
+if [ "$num_files" -gt "$max_files" ]; then
+    excess_files=$((num_files - max_files))
+
+Remove all files except the latest one
+    ls -t | tail -n +2 | xargs rm -f
+
+    echo "$excess_files files removed to meet the limit of $max_files files."
+else
+    echo "Number of files is within the limit. Nothing to remove."
+fi
+11. chmod 777 check.sh
+12. crontab -e, inside we write * * * * * sh /check.sh /folder 1
+(./check.sh /folder 2 //(or 1 or any number))
+13. service cron start
